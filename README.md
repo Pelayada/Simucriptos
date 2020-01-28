@@ -1,0 +1,2 @@
+# Simucriptos
+Simulador de criptomonedas.
