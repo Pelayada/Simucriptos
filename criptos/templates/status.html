@@ -3,8 +3,21 @@
 {% block title %} Mis tareas {% endblock %}
 
 {% block content %}
-    <h1>Mis tareas</h1>
-    <form action="/processtask">
-        
-    </form>
+    <div class="row">
+        <div class="column column-50 column-offset-33">
+            <h1 class="titleStatus">ESTADO DE LA INVERSIÓN</h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="column column-50 column-offset-33">
+            <label for="invertido">Inversión:</label>
+            <input class="equalWidth" type="text" id="invertido" name="invertido" />  
+        </div>
+    </div>
+    <div class="row">
+        <div class="column column-50 column-offset-33">
+            <label for="valorActual">Valor actual:</label>
+            <input class="equalWidth" type="text" id="valorActual" name="valorActual" />  
+        </div>
+    </div>
 {% endblock %}

@@ -1,13 +1,74 @@
 {% extends "base.html" %}
 
-{% block title %} Mis tareas {% endblock %}
+{% block title %} Purchase {% endblock %}
 
 {% block content %}
-    <h1>Mis tareas</h1>
-    <form action="/processtask">
-       
-        <button class="button-primary" name="btnModificar" type="submit">Modificar</button>
-        <button class="button-primary" name="btnBorrar" type="submit">Borrar</button>
-        <a class="button button-primary u-pull-right" href="/newtask">Nueva tarea</a>
-    </form>
+<h1>COMPRA DE CRIPTOS</h1>
+    
+  <form class="container" action="">
+    <div class="row">
+        <div class="column">
+          <label for="selectFrom">From</label>
+          <select class="equalWidth" name="from" id="selectFrom">
+              <option value="EUR">EUR</option> 
+              <option value="BTC">BTC</option>
+              <option value="ETH">ETH</option>
+              <option value="XRP">XRP</option>
+              <option value="LTC">LTC</option>
+              <option value="BCH">BCH</option>
+              <option value="BNB">BNB</option>
+              <option value="USDT">USDT</option>
+              <option value="EOS">EOS</option>
+              <option value="BSV">BSV</option>
+              <option value="XLM">XLM</option>
+              <option value="ADA">ADA</option>
+              <option value="TRX">TRX</option>
+          </select>
+        </div>
+        <div class="column">
+            <label for="selectTo">To</label>
+            <select class="equalWidth" name="to" id="selectTo">
+              <option value="EUR">EUR</option> 
+              <option value="BTC">BTC</option>
+              <option value="ETH">ETH</option>
+              <option value="XRP">XRP</option>
+              <option value="LTC">LTC</option>
+              <option value="BCH">BCH</option>
+              <option value="BNB">BNB</option>
+              <option value="USDT">USDT</option>
+              <option value="EOS">EOS</option>
+              <option value="BSV">BSV</option>
+              <option value="XLM">XLM</option>
+              <option value="ADA">ADA</option>
+              <option value="TRX">TRX</option>
+            </select>
+        </div>
+    </div> 
+    <div class="row">  
+      <div class="column">
+        <label for="QFrom">Q</label>
+        <input class="equalWidth" type="text" id="QFrom" name="QFrom"/>  
+      </div>
+      <div class="column">
+        <label for="QTo">Q</label>
+        <input class="equalWidth" type="text" id="QTo" name="QTo" /> 
+      </div>  
+    </div>
+    <div class="row">
+      <div class="column">
+        <input type="button" id="buttonFrom" name="buttonFrom" value="Calcular"/>
+      </div>
+      <div class="column">
+        <label for="QPU">P.U.</label>
+        <input class="equalWidth" type="text" id="QPU" name="QPU" /> 
+      </div>
+    </div>
+    <div class="row">
+        <div class="column column-50 column-offset-50">
+          <input type="button" id="send" name="send" value="OK"/> 
+          <input type="button" id="cancel" name="cancel"value="Cancel"/> 
+        </div>
+    </div>
+    
+  </form>
 {% endblock %}

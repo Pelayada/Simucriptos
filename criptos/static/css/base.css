@@ -1,0 +1,20 @@
+body {
+    margin: 20px;
+}
+
+header {
+    margin-left: 10px;
+}
+
+.equalWidth {
+    width: 50% !important;
+}
+
+h1 {
+    font-size: 30px;
+    
+}
+
+#menu {
+    margin-bottom: 25px;
+}

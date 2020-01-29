@@ -7,14 +7,16 @@
     <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic">
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.css">
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/milligram/1.3.0/milligram.css">
-    
+    <link rel="stylesheet" href="/static/css/base.css">
 </head>
 <body>
     <header>
-        <h1>myCRIPTO</h1>
-        <a href="/">Inicio</a> | <a href="/purchase">Compra</a>  |  <a href="/status">Status</a>
+        <h1>CRIPTOS</h1>
+        <div id="menu">
+            <a href="/">Inicio</a> | <a href="/purchase">Compra</a>  |  <a href="/status">Status</a>
+        </div>
     </header>
-    <section class="container">
+    <section>
         {% block content %}{% endblock %}
     </section>
     <footer>&copy 2020 - Todos los derechos reservados</footer>
