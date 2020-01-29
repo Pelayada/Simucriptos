@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %} myCRIPTO {% endblock %}
+{% block title %} CRIPTOS {% endblock %}
 
 {% block content %}
     <h1>MOVIMIENTOS</h1>
-    <form action="/processtask">
+
         <table class="u-full-width">
             <tr>
-                <th>#</th>
+                <th>Id</th>
                 <th>Fecha</th>
                 <th>Hora</th>
                 <th>From</th>
@@ -21,17 +21,20 @@
                 <td class="field-error" colspan="4">No hay tareas</td>
             </tr>
             {% endif %}
-            {% for tarea in registros %}
+            {% for mov in registros %}
             <tr>
-                <td><input type="radio" name="ix" value="{{tarea['id']}}" ></td>
-                <td>{{tarea['titulo']}}</td>
-                <td>{{tarea['descripcion']}}</td>
-                <td>{{tarea['fecha']}}</td>
+                <td>{{mov[0]}}</td>
+                <td>{{mov[1]}}</td>
+                <td>{{mov[2]}}</td>
+                <td>{{mov[3]}}</td>
+                <td>{{mov[4]}}</td>
+                <td>{{mov[5]}}</td>
+                <td>{{mov[6]}}</td>
             </tr>
             {% endfor %}
         </table>
         <a href="/status"><input type="button" value="Status"></a>
         <a href="/purchase"><input type="button" value="+"></a>
 
-    </form>
+    
 {% endblock %}
