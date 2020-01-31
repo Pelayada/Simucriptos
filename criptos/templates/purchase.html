@@ -5,11 +5,15 @@
 {% block content %}
 <h1>COMPRA DE CRIPTOS</h1>
     
-  <form class="container" action="">
+  <form class="container" action="/purchase" method="POST">
+    {{ form.hidden_tag() }}
     <div class="row">
         <div class="column">
           <label for="selectFrom">From</label>
-          <select class="equalWidth" name="from" id="selectFrom">
+
+          {{ form.froM(class='equalWidth',id='selectFrom') }}
+
+          <!--select class="equalWidth" name="from" id="selectFrom">
               <option value="EUR">EUR</option> 
               <option value="BTC">BTC</option>
               <option value="ETH">ETH</option>
@@ -23,11 +27,14 @@
               <option value="XLM">XLM</option>
               <option value="ADA">ADA</option>
               <option value="TRX">TRX</option>
-          </select>
+          </!--select-->
         </div>
         <div class="column">
             <label for="selectTo">To</label>
-            <select class="equalWidth" name="to" id="selectTo">
+
+            {{ form.to(class='equalWidth',id='selectTo') }}
+
+            <!--select class="equalWidth" name="to" id="selectTo">
               <option value="EUR">EUR</option> 
               <option value="BTC">BTC</option>
               <option value="ETH">ETH</option>
@@ -41,31 +48,42 @@
               <option value="XLM">XLM</option>
               <option value="ADA">ADA</option>
               <option value="TRX">TRX</option>
-            </select>
+            </!--select-->
         </div>
     </div> 
     <div class="row">  
       <div class="column">
         <label for="QFrom">Q</label>
-        <input class="equalWidth" type="text" id="QFrom" name="QFrom"/>  
+
+        {{ form.QFrom(class='equalWidth',id='QFrom') }}
+
+        <!--input class="equalWidth" type="number" id="QFrom" name="QFrom"/-->  
       </div>
       <div class="column">
         <label for="QTo">Q</label>
-        <input class="equalWidth" type="text" id="QTo" name="QTo" /> 
+
+        {{ form.QTo(class='equalWidth',id='QTo') }}
+
+        <!--input class="equalWidth" type="number" id="QTo" name="QTo" /--> 
       </div>  
     </div>
     <div class="row">
       <div class="column">
+
+
         <input type="submit" id="buttonFrom" name="buttonFrom" value="Calcular"/>
       </div>
       <div class="column">
         <label for="QPU">P.U.</label>
-        <input class="equalWidth" type="text" id="QPU" name="QPU" /> 
+        <input class="equalWidth" type="number" id="QPU" name="QPU" /> 
       </div>
     </div>
     <div class="row">
         <div class="column column-50 column-offset-50">
-          <input type="submit" id="send" name="send" value="OK"/> 
+
+          {{ form.submit(id='send', value='OK') }}
+
+          <!--input type="submit" id="send" name="send" value="OK"/--> 
           <input type="submit" id="cancel" name="cancel"value="Cancel"/> 
         </div>
     </div>
