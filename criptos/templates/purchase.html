@@ -56,6 +56,11 @@
         <label for="QFrom">Q</label>
 
         {{ form.QFrom(class='equalWidth',id='QFrom') }}
+        {% if form.QFrom.errors %}
+                {% for error in form.QFrom.errors %}
+                    <p class='field-error'>{{ error }}</p>
+                {% endfor %}
+            {% endif %}
 
         <!--input class="equalWidth" type="number" id="QFrom" name="QFrom"/-->  
       </div>
@@ -63,19 +68,30 @@
         <label for="QTo">Q</label>
 
         {{ form.QTo(class='equalWidth',id='QTo') }}
+        {% if form.QTo.errors %}
+                {% for error in form.QTo.errors %}
+                    <p class='field-error'>{{ error }}</p>
+                {% endfor %}
+            {% endif %}
 
         <!--input class="equalWidth" type="number" id="QTo" name="QTo" /--> 
       </div>  
     </div>
     <div class="row">
       <div class="column">
-
-
-        <input type="submit" id="buttonFrom" name="buttonFrom" value="Calcular"/>
+        <input type="button" id="buttonFrom" name="buttonFrom" value="Calcular"/>
       </div>
       <div class="column">
         <label for="QPU">P.U.</label>
-        <input class="equalWidth" type="number" id="QPU" name="QPU" /> 
+
+        {{ form.QPU(class='equalWidth', id='QPU') }}
+        {% if form.QPU.errors %}
+                {% for error in form.QPU.errors %}
+                    <p class='field-error'>{{ error }}</p>
+                {% endfor %}
+            {% endif %}
+
+        <!--input class="equalWidth" type="number" id="QPU" name="QPU" /--> 
       </div>
     </div>
     <div class="row">
@@ -89,4 +105,5 @@
     </div>
     
   </form>
+  <script src="../static/js/base.js"></script>
 {% endblock %}
