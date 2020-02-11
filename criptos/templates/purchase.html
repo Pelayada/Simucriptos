@@ -10,71 +10,32 @@
     <div class="row">
         <div class="column">
           <label for="selectFrom">From</label>
-
           {{ form.froM(class='equalWidth',id='selectFrom') }}
-
-          <!--select class="equalWidth" name="from" id="selectFrom">
-              <option value="EUR">EUR</option> 
-              <option value="BTC">BTC</option>
-              <option value="ETH">ETH</option>
-              <option value="XRP">XRP</option>
-              <option value="LTC">LTC</option>
-              <option value="BCH">BCH</option>
-              <option value="BNB">BNB</option>
-              <option value="USDT">USDT</option>
-              <option value="EOS">EOS</option>
-              <option value="BSV">BSV</option>
-              <option value="XLM">XLM</option>
-              <option value="ADA">ADA</option>
-              <option value="TRX">TRX</option>
-          </!--select-->
         </div>
         <div class="column">
             <label for="selectTo">To</label>
-
             {{ form.to(class='equalWidth',id='selectTo') }}
-
-            <!--select class="equalWidth" name="to" id="selectTo">
-              <option value="EUR">EUR</option> 
-              <option value="BTC">BTC</option>
-              <option value="ETH">ETH</option>
-              <option value="XRP">XRP</option>
-              <option value="LTC">LTC</option>
-              <option value="BCH">BCH</option>
-              <option value="BNB">BNB</option>
-              <option value="USDT">USDT</option>
-              <option value="EOS">EOS</option>
-              <option value="BSV">BSV</option>
-              <option value="XLM">XLM</option>
-              <option value="ADA">ADA</option>
-              <option value="TRX">TRX</option>
-            </!--select-->
         </div>
     </div> 
     <div class="row">  
-      <div class="column">
+      <div class="column" id="divQ">
         <label for="QFrom">Q</label>
-
         {{ form.QFrom(class='equalWidth',id='QFrom') }}
         {% if form.QFrom.errors %}
                 {% for error in form.QFrom.errors %}
                     <p class='field-error'>{{ error }}</p>
                 {% endfor %}
-            {% endif %}
-
-        <!--input class="equalWidth" type="number" id="QFrom" name="QFrom"/-->  
+        {% endif %}
       </div>
       <div class="column">
         <label for="QTo">Q</label>
 
-        {{ form.QTo(class='equalWidth',id='QTo') }}
+        {{ form.QTo(class='equalWidth', id='QTo', readonly="readonly") }}
         {% if form.QTo.errors %}
                 {% for error in form.QTo.errors %}
                     <p class='field-error'>{{ error }}</p>
                 {% endfor %}
-            {% endif %}
-
-        <!--input class="equalWidth" type="number" id="QTo" name="QTo" /--> 
+        {% endif %}
       </div>  
     </div>
     <div class="row">
@@ -83,24 +44,18 @@
       </div>
       <div class="column">
         <label for="QPU">P.U.</label>
-
         {{ form.QPU(class='equalWidth', id='QPU') }}
         {% if form.QPU.errors %}
                 {% for error in form.QPU.errors %}
                     <p class='field-error'>{{ error }}</p>
                 {% endfor %}
-            {% endif %}
-
-        <!--input class="equalWidth" type="number" id="QPU" name="QPU" /--> 
+        {% endif %}
       </div>
     </div>
     <div class="row">
         <div class="column column-50 column-offset-50">
-
           {{ form.submit(id='send', value='OK') }}
-
-          <!--input type="submit" id="send" name="send" value="OK"/--> 
-          <input type="submit" id="cancel" name="cancel"value="Cancel"/> 
+          <input type="button" id="cancel" name="cancel"value="Cancel"/> 
         </div>
     </div>
     

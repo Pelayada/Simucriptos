@@ -11,6 +11,7 @@ from requests import Request, Session
 from requests.exceptions import ConnectionError, Timeout, TooManyRedirects
 
 BASE_DATOS = './data/mov.db'
+API_KEY = app.config['API_KEY']
 
 def todosMovDB():
     conn = sqlite3.connect(BASE_DATOS)
@@ -28,14 +29,12 @@ def todosMovDB():
 @app.route("/")
 def index():
     registros = todosMovDB()
-    print("registros", registros)
     return render_template("index.html", registros=registros)
 
 
 @app.route("/purchase", methods=('GET', 'POST'))
 def purchase():
     form = SimuForm(request.form)
-
     if request.method == 'GET':
         return render_template('purchase.html', form=form)
 
@@ -44,7 +43,7 @@ def purchase():
         to = request.values.get('to')
         QFrom = request.values.get('QFrom')
         QTo = request.values.get('QTo')
-        
+        print('QTo', QTo)
 
         x = datetime.datetime.now()
         y = datetime.datetime.now()
@@ -67,14 +66,43 @@ def purchase():
         return render_template('purchase.html', form=form)
 
 
-@app.route("/status")
+@app.route("/status", methods=('GET', 'POST'))
 def status():
+    form = SimuForm(request.form)
+
+    conn = sqlite3.connect(BASE_DATOS)
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM Movements WHERE from_currency='EUR'")
+ 
+    rows = cur.fetchall()
+    sumaInvertido = 0
+
+    for row in rows:
+        sumaInvertido = sumaInvertido + row[4]
+
+    conn.close()
+
+    conn = sqlite3.connect(BASE_DATOS)
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM Movements WHERE from_currency='BTC'")
+ 
+    rows = cur.fetchall()
+    sumaValorActual = 0
+
+    for row in rows:
+        sumaValorActual = sumaValorActual + row[4]
+
+    conn.close()
+   
+
     
-    return render_template("status.html")
+    return render_template("status.html", sumaInvertido=sumaInvertido,sumaValorActual=sumaValorActual, form=form)
 
 @app.route("/coin")
 @cross_origin()
 def coin():
+    form = SimuForm(request.form)
+    
     froM = request.values.get('symbol')
     to = request.values.get('convert')
     QFrom = request.values.get('amount')
@@ -86,7 +114,7 @@ def coin():
     }
     headers = {
     'Accepts': 'application/json',
-    'X-CMC_PRO_API_KEY': '2ddda9f5-57bc-4f94-8cbf-7c5632d4e1c7',
+    'X-CMC_PRO_API_KEY': API_KEY,
     }
 
     session = Session()

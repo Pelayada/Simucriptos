@@ -18,3 +18,16 @@ h1 {
 #menu {
     margin-bottom: 25px;
 }
+#menu a:visited {
+    cursor: default;
+    pointer-events: none;
+}
+
+#QTo:focus {
+    cursor: default;
+    border-color: #d1d1d1;
+}
+
+#QTo:hover {
+    cursor: default;
+}
