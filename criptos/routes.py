@@ -42,7 +42,7 @@ def purchase():
     coins = cursor.execute(consulta)
     mychoices = [(-1, 'Seleccione Moneda')]
     for e in coins:
-        mychoices = mychoices + [(e[1], e[1])]
+        mychoices = mychoices + [(e[0], e[1])]
     form = SimuForm(request.form)
     form.updateChoices(mychoices)
     
@@ -50,22 +50,7 @@ def purchase():
         return render_template('purchase.html', form=form, mychoices=mychoices, route="purchase")
 
     if form.validate():
-        froM = request.values.get('froM')
         to = request.values.get('to')
-        QFrom = request.values.get('QFrom')
-        QTo = request.values.get('QTo') 
-        x = datetime.datetime.now()
-        y = datetime.datetime.now()
-        date = x.strftime('%x')
-        time = y.strftime('%X')
-
-        conn = sqlite3.connect(BASE_DATOS)
-        cursor = conn.cursor()
-        consulta = '''
-            INSERT INTO Movements (date, time, from_currency, from_quantity, to_currency, to_quantity) 
-            VALUES (?,?,?,?,?,?);
-        ''' 
-        cursor.execute(consulta, (date, time, froM, QFrom, to, QTo))
 
         url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/map'
         parameters = {
@@ -89,16 +74,33 @@ def purchase():
                     conn.commit()
                     conn.close()
                     return redirect(url_for("index"))
+
+                
             
             consultaCoin = '''
                 INSERT INTO Criptos (id, symbol, name) 
                 VALUES (?,?,?);
             '''
             cursor.execute(consultaCoin, (idCoin, to, nameCoin))
+            
+            froM = request.values.get('froM')
+            QFrom = request.values.get('QFrom')
+            QTo = request.values.get('QTo') 
+            x = datetime.datetime.now()
+            y = datetime.datetime.now()
+            date = x.strftime('%x')
+            time = y.strftime('%X')
+
+            consulta = '''
+                INSERT INTO Movements (date, time, from_currency, from_quantity, to_currency, to_quantity) 
+                VALUES (?,?,?,?,?,?);
+            ''' 
+            cursor.execute(consulta, (date, time, froM, QFrom, idCoin, QTo))
             conn.commit()
             conn.close()
 
             return redirect(url_for("index"))
+        
         
         except (ConnectionError, Timeout, TooManyRedirects) as e:
             return(e)
