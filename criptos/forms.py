@@ -11,7 +11,7 @@ def validate_number(form, field):
 
 class SimuForm(FlaskForm):
     froM = SelectField('From', coerce=int)
-    to = SelectField('To', choices = [('EUR', 'EUR - EURO'), ('BTC', 'BTC - BITCOIN'), ('ETH', 'ETH - ETHEREUM'), ('XRP', 'XRP - XRP'), ('LTC', 'LTC - LITCOIN'), ('BCH', 'BCH - BITCOIN CASH'), ('BNB', 'BNB - BINANCE COIN'), ('USDT', 'USDT - TETHER'), ('EOS', 'EOS - EOS'), ('BSV', 'BSV - BITCOIN SV'), ('XLM', 'XLM - STELLAR'), ('ADA', 'ADA - CARDANO'), ('TRX', 'TRX - TRON')])
+    to = SelectField('To', choices = [(-1, 'Seleccione Moneda'), ('EUR', 'EUR - Euro'), ('BTC', 'BTC - Bitcoin'), ('ETH', 'ETH - Ethereum'), ('XRP', 'XRP - XRP'), ('LTC', 'LTC - Litcoin'), ('BCH', 'BCH - Bitcoin cash'), ('BNB', 'BNB - Binance coin'), ('USDT', 'USDT - Tether'), ('EOS', 'EOS - EOS'), ('BSV', 'BSV - Bitcoin SV'), ('XLM', 'XLM - Stellar'), ('ADA', 'ADA - Cardano'), ('TRX', 'TRX - Tron')])
     QFrom = StringField('QFrom', validators = [InputRequired(), validate_number])
     QTo = StringField('QTo')
     QPU = StringField('QPU', render_kw={'disabled':''})

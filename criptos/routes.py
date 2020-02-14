@@ -16,12 +16,14 @@ API_KEY = app.config['API_KEY']
 def todosMovDB():
     conn = sqlite3.connect(BASE_DATOS)
     cursor = conn.cursor()
-    consulta = 'SELECT id, date, time, from_currency, from_quantity, to_currency, to_quantity FROM Movements;'
+    consulta = '''SELECT Movements.id, Movements.date, Movements.time,
+                CriptosFrom.symbol, Movements.from_quantity, CriptosTo.symbol, Movements.to_quantity FROM Movements 
+                INNER JOIN Criptos as CriptosFrom ON Movements.from_currency = CriptosFrom.id
+                INNER JOIN Criptos as CriptosTo ON Movements.to_currency = CriptosTo.id;'''
     rows = cursor.execute(consulta)
     filas = []
     for row in rows:
         filas.append(row)
-    
     conn.close()
     return filas
     
@@ -42,7 +44,7 @@ def purchase():
     coins = cursor.execute(consulta)
     mychoices = [(-1, 'Seleccione Moneda')]
     for e in coins:
-        mychoices = mychoices + [(e[0], e[1])]
+        mychoices = mychoices + [(e[0],'{} - {}'.format(e[1], e[2]))]
     form = SimuForm(request.form)
     form.updateChoices(mychoices)
     
@@ -71,11 +73,25 @@ def purchase():
 
             for i in range(len(mychoices)):
                 if idCoin == mychoices[i][0]: 
+
+                    froM = request.values.get('froM')
+                    QFrom = request.values.get('QFrom')
+                    QTo = request.values.get('QTo') 
+                    x = datetime.datetime.now()
+                    y = datetime.datetime.now()
+                    date = x.strftime('%x')
+                    time = y.strftime('%X')
+
+                    consulta = '''
+                        INSERT INTO Movements (date, time, from_currency, from_quantity, to_currency, to_quantity) 
+                        VALUES (?,?,?,?,?,?);
+                    ''' 
+                    cursor.execute(consulta, (date, time, froM, QFrom, idCoin, QTo))
                     conn.commit()
                     conn.close()
                     return redirect(url_for("index"))
 
-                
+
             
             consultaCoin = '''
                 INSERT INTO Criptos (id, symbol, name) 
