@@ -79,7 +79,7 @@ def purchase():
                     QTo = request.values.get('QTo') 
                     x = datetime.datetime.now()
                     y = datetime.datetime.now()
-                    date = x.strftime('%x')
+                    date = x.strftime('%d-%m-%Y')
                     time = y.strftime('%X')
 
                     consulta = '''
@@ -104,7 +104,7 @@ def purchase():
             QTo = request.values.get('QTo') 
             x = datetime.datetime.now()
             y = datetime.datetime.now()
-            date = x.strftime('%x')
+            date = x.strftime('%d-%m-%Y')
             time = y.strftime('%X')
 
             consulta = '''
@@ -132,31 +132,43 @@ def status():
 
     conn = sqlite3.connect(BASE_DATOS)
     cur = conn.cursor()
-    cur.execute("SELECT * FROM Movements WHERE from_currency='EUR'")
+    consultaInvert = ''' SELECT * FROM Movements WHERE from_currency='2790' '''
+    rows = cur.execute(consultaInvert)
  
-    rows = cur.fetchall()
     sumaInvertido = 0
 
     for row in rows:
         sumaInvertido = sumaInvertido + row[4]
 
-    conn.close()
-
-    conn = sqlite3.connect(BASE_DATOS)
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM Movements WHERE from_currency='BTC'")
+   
+    consultaFromBTC = ''' SELECT * FROM Movements WHERE from_currency = '1' '''
+    rowsFromBTC = cur.execute(consultaFromBTC)
  
-    rows = cur.fetchall()
-    sumaValorActual = 0
+    sumaFromBTC = 0
 
-    for row in rows:
-        sumaValorActual = sumaValorActual + row[4]
+    for row in rowsFromBTC:
+        sumaFromBTC = sumaFromBTC + row[4]
+
+    print(sumaFromBTC)
+
+    consultaToBTC = ''' SELECT * FROM Movements WHERE to_currency = '1' '''
+    rowsToBTC = cur.execute(consultaToBTC)
+ 
+    sumaToBTC = 0
+
+    for row in rowsToBTC:
+        sumaToBTC = sumaToBTC + row[6]
+
+    print(sumaToBTC)
+
+    totalBTC = sumaToBTC - sumaFromBTC
+    print(totalBTC)
 
     conn.close()
    
 
     
-    return render_template("status.html", sumaInvertido=sumaInvertido,sumaValorActual=sumaValorActual, form=form, route='status')
+    return render_template("status.html", sumaInvertido=sumaInvertido, form=form, route='status')
 
 @app.route("/coin")
 @cross_origin()
