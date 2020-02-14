@@ -18,11 +18,10 @@ h1 {
 #menu {
     margin-bottom: 25px;
 }
-#menu a:visited {
-    cursor: default;
-    pointer-events: none;
-}
 
+#menu .disable{
+    color: #606c76;
+}
 #QTo:focus {
     cursor: default;
     border-color: #d1d1d1;

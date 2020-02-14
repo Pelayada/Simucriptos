@@ -13,7 +13,22 @@
     <header>
         <h1>CRIPTOS</h1>
         <div id="menu">
-            <a href="/">Inicio</a> | <a href="/purchase">Compra</a>  |  <a href="/status">Status</a>
+            {% if 'index' != route %}
+            <a href="/">Inicio</a> | 
+            {% else%}
+            <a class="disable">Inicio</a> | 
+            {% endif %}
+            {% if 'purchase' != route %}
+            <a href="/purchase">Compra</a>  |
+            {% else%}
+            <a class="disable">Compra</a>  |
+            {% endif %}
+            {% if 'status' != route %}
+            <a href="/status">Status</a> 
+            {% else%}
+            <a class="disable">Status</a> | 
+            {% endif %}
+              
         </div>
     </header>
     <section>
