@@ -26,7 +26,121 @@ def todosMovDB():
         filas.append(row)
     conn.close()
     return filas
+
+def selectChoices(cursor):
+    consulta = """
+        SELECT id, symbol, name FROM Criptos;
+    """
+    coins = cursor.execute(consulta)
+    mychoices = [(-1, 'Seleccione Moneda')]
+    for e in coins:
+        mychoices = mychoices + [(e[0],'{} - {}'.format(e[1], e[2]))]
+
+    return mychoices
+
+
+def sumaFromCoin(cur, coins):
+    dictFromCoin = {}
+    for i in coins:
+        consulta1 = ''' SELECT from_quantity FROM Movements WHERE from_currency = ? '''
+        cur.execute(consulta1,(i[0],))
+        rowsFromCoin = cur.fetchall()
+        sumaFromCoin = 0
+        
+        for row in rowsFromCoin:
+            sumaFromCoin = sumaFromCoin + row[0]
+        dictFromCoin[i[0]] = sumaFromCoin
+    return dictFromCoin
     
+
+
+def sumaToCoin(cur, coins):
+    dictToCoin = {}
+    for i in coins:
+        consulta2 = '''SELECT to_quantity FROM Movements WHERE to_currency = ?'''
+        cur.execute(consulta2,(i[0],))
+        rowsToCoin = cur.fetchall()
+        sumaToCoin = 0
+        
+        for row in rowsToCoin:
+            sumaToCoin = sumaToCoin + row[0]
+        dictToCoin[i[0]] = sumaToCoin
+    return dictToCoin
+
+
+def sumaTotalCoin(dictFromCoin, dictToCoin):
+    dictTotalCoin = {}
+    for i in dictFromCoin:
+        restaToFrom = 0
+        for j in dictToCoin:
+            if i == j:
+                restaToFrom = dictToCoin[j] - dictFromCoin[i]
+                if i != 2790:
+                    dictTotalCoin[i] = round(restaToFrom, 4)
+                else:
+                    dictTotalCoin[i] = (restaToFrom)*(-1)
+    return dictTotalCoin
+
+def converCoin(dictTotalCoin, i, listConverCoin):
+
+    url = 'https://pro-api.coinmarketcap.com/v1/tools/price-conversion'
+    parameters = {
+        'amount': dictTotalCoin[i],
+        'id': i,
+        'convert': 'EUR'
+    }
+    headers = {
+        'Accepts': 'application/json',
+        'X-CMC_PRO_API_KEY': API_KEY,
+    }
+
+    session = Session()
+    session.headers.update(headers)
+
+    try:
+        response = session.get(url, params=parameters)
+        data = json.loads(response.text)
+        changeCoin = data['data']['quote']['EUR']['price']
+        listConverCoin.append(changeCoin)
+        return listConverCoin
+
+    except (ConnectionError, Timeout, TooManyRedirects) as e:
+        return e
+
+def updateCoins():
+    conn = sqlite3.connect(BASE_DATOS)
+    cur = conn.cursor()
+
+    consulta = """
+        SELECT id FROM Criptos;
+    """
+    cur.execute(consulta)
+    coins = cur.fetchall()
+
+    listConverCoin = []
+    sumaValorActual = 0
+    sumaInversion = 0
+    sumaFinal = []
+
+    dictFromCoin = sumaFromCoin(cur, coins)
+    dictToCoin = sumaToCoin(cur, coins)
+    dictTotalCoin = sumaTotalCoin(dictFromCoin, dictToCoin)
+
+    for i in dictTotalCoin:
+        if i != 2790:
+            converCoin(dictTotalCoin, i, listConverCoin)
+        else:
+            sumaInversion = dictTotalCoin[i]
+            sumaFinal.append(sumaInversion)
+    
+    for i in listConverCoin:
+        sumaValorActual = round((sumaValorActual + i), 4)
+
+    sumaFinal.append(sumaValorActual)
+
+    conn.close()
+
+    return sumaFinal
 
 @app.route("/")
 def index():
@@ -38,13 +152,9 @@ def index():
 def purchase():
     conn = sqlite3.connect(BASE_DATOS)
     cursor = conn.cursor()
-    consulta = """
-        SELECT id, symbol, name FROM Criptos;
-    """
-    coins = cursor.execute(consulta)
-    mychoices = [(-1, 'Seleccione Moneda')]
-    for e in coins:
-        mychoices = mychoices + [(e[0],'{} - {}'.format(e[1], e[2]))]
+    
+    mychoices = selectChoices(cursor)
+
     form = SimuForm(request.form)
     form.updateChoices(mychoices)
     
@@ -129,46 +239,10 @@ def purchase():
 @app.route("/status", methods=('GET', 'POST'))
 def status():
     form = SimuForm(request.form)
-
-    conn = sqlite3.connect(BASE_DATOS)
-    cur = conn.cursor()
-    consultaInvert = ''' SELECT * FROM Movements WHERE from_currency='2790' '''
-    rows = cur.execute(consultaInvert)
- 
-    sumaInvertido = 0
-
-    for row in rows:
-        sumaInvertido = sumaInvertido + row[4]
-
-   
-    consultaFromBTC = ''' SELECT * FROM Movements WHERE from_currency = '1' '''
-    rowsFromBTC = cur.execute(consultaFromBTC)
- 
-    sumaFromBTC = 0
-
-    for row in rowsFromBTC:
-        sumaFromBTC = sumaFromBTC + row[4]
-
-    print(sumaFromBTC)
-
-    consultaToBTC = ''' SELECT * FROM Movements WHERE to_currency = '1' '''
-    rowsToBTC = cur.execute(consultaToBTC)
- 
-    sumaToBTC = 0
-
-    for row in rowsToBTC:
-        sumaToBTC = sumaToBTC + row[6]
-
-    print(sumaToBTC)
-
-    totalBTC = sumaToBTC - sumaFromBTC
-    print(totalBTC)
-
-    conn.close()
-   
-
     
-    return render_template("status.html", sumaInvertido=sumaInvertido, form=form, route='status')
+    sumaFinal = updateCoins()
+   
+    return render_template("status.html", form=form, route='status', sumaFinal=sumaFinal)
 
 @app.route("/coin")
 @cross_origin()

@@ -11,7 +11,7 @@
     <div class="row">
         <div class="column column-50 column-offset-33">
             <label for="invertido">Inversión:</label>
-            {{ form.invertido(class='equalWidth',id='invertido', value=sumaInvertido) }}
+            {{ form.invertido(class='equalWidth',id='invertido', value=sumaFinal[0]) }}
             {% if form.invertido.errors %}
                 {% for error in form.invertido.errors %}
                     <p class='field-error'>{{ error }}</p>
@@ -22,7 +22,7 @@
     <div class="row">
         <div class="column column-50 column-offset-33">
             <label for="valorActual">Valor actual:</label>
-            {{ form.valorActual(class='equalWidth',id='valorActual', value=sumaValorActual) }}
+            {{ form.valorActual(class='equalWidth',id='valorActual', value=sumaFinal[1]) }}
             {% if form.valorActual.errors %}
                 {% for error in form.valorActual.errors %}
                     <p class='field-error'>{{ error }}</p>
