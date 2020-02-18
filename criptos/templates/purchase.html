@@ -13,8 +13,8 @@
           {{ form.froM(class='equalWidth',id='selectFrom') }}
         </div>
         <div class="column">
-            <label for="selectTo">To</label>
-            {{ form.to(class='equalWidth',id='selectTo') }}
+          <label for="selectTo">To</label>
+          {{ form.to(class='equalWidth',id='selectTo') }}
         </div>
     </div> 
     <div class="row">  
@@ -58,7 +58,9 @@
           <input type="button" id="cancel" name="cancel"value="Cancel"/> 
         </div>
     </div>
-    
   </form>
+  <h1 class='field-error'>{{ textError }}</h1>
+  <h2 id='errorGeneral'>{{ textError }}</h2>
+
   <script src="../static/js/purchase.js"></script>
 {% endblock %}

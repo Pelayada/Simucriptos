@@ -15,12 +15,12 @@ API_KEY = app.config['API_KEY']
 
 def todosMovDB():
     conn = sqlite3.connect(BASE_DATOS)
-    cursor = conn.cursor()
+    cur = conn.cursor()
     consulta = '''SELECT Movements.id, Movements.date, Movements.time,
                 CriptosFrom.symbol, Movements.from_quantity, CriptosTo.symbol, Movements.to_quantity FROM Movements 
                 INNER JOIN Criptos as CriptosFrom ON Movements.from_currency = CriptosFrom.id
                 INNER JOIN Criptos as CriptosTo ON Movements.to_currency = CriptosTo.id;'''
-    rows = cursor.execute(consulta)
+    rows = cur.execute(consulta)
     filas = []
     for row in rows:
         filas.append(row)
@@ -38,6 +38,18 @@ def selectChoices(cursor):
 
     return mychoices
 
+def insertMovements(conn, cursor, idCoin, froM, QFrom):
+    QTo = request.values.get('QTo') 
+    x = datetime.datetime.now()
+    y = datetime.datetime.now()
+    date = x.strftime('%d-%m-%Y')
+    time = y.strftime('%X')
+
+    consulta = '''
+        INSERT INTO Movements (date, time, from_currency, from_quantity, to_currency, to_quantity) 
+        VALUES (?,?,?,?,?,?);
+    ''' 
+    cursor.execute(consulta, (date, time, froM, QFrom, idCoin, QTo))
 
 def sumaFromCoin(cur, coins):
     dictFromCoin = {}
@@ -51,8 +63,6 @@ def sumaFromCoin(cur, coins):
             sumaFromCoin = sumaFromCoin + row[0]
         dictFromCoin[i[0]] = sumaFromCoin
     return dictFromCoin
-    
-
 
 def sumaToCoin(cur, coins):
     dictToCoin = {}
@@ -67,7 +77,6 @@ def sumaToCoin(cur, coins):
         dictToCoin[i[0]] = sumaToCoin
     return dictToCoin
 
-
 def sumaTotalCoin(dictFromCoin, dictToCoin):
     dictTotalCoin = {}
     for i in dictFromCoin:
@@ -79,10 +88,10 @@ def sumaTotalCoin(dictFromCoin, dictToCoin):
                     dictTotalCoin[i] = round(restaToFrom, 4)
                 else:
                     dictTotalCoin[i] = (restaToFrom)*(-1)
+
     return dictTotalCoin
 
 def converCoin(dictTotalCoin, i, listConverCoin):
-
     url = 'https://pro-api.coinmarketcap.com/v1/tools/price-conversion'
     parameters = {
         'amount': dictTotalCoin[i],
@@ -105,7 +114,8 @@ def converCoin(dictTotalCoin, i, listConverCoin):
         return listConverCoin
 
     except (ConnectionError, Timeout, TooManyRedirects) as e:
-        return e
+        textError = "Fallo en API. Inténtelo más tarde."
+        return render_template('status.html', form=form, route='purchase', textError=textError)
 
 def updateCoins():
     conn = sqlite3.connect(BASE_DATOS)
@@ -147,16 +157,22 @@ def index():
     registros = todosMovDB()
     return render_template("index.html", registros=registros, route="index")
 
-
 @app.route("/purchase", methods=('GET', 'POST'))
 def purchase():
     conn = sqlite3.connect(BASE_DATOS)
-    cursor = conn.cursor()
+    cur = conn.cursor()
     
-    mychoices = selectChoices(cursor)
-
+    mychoices = selectChoices(cur)
     form = SimuForm(request.form)
     form.updateChoices(mychoices)
+
+    consulta = """
+        SELECT id FROM Criptos;
+    """
+    cur.execute(consulta)
+    coins = cur.fetchall()
+
+    dictToCoin = sumaToCoin(cur, coins)
     
     if request.method == 'GET':
         return render_template('purchase.html', form=form, mychoices=mychoices, route="purchase")
@@ -178,62 +194,53 @@ def purchase():
         try:
             response = session.get(url, params=parameters)
             data = json.loads(response.text)
-            idCoin = data['data'][0]['id']
-            nameCoin = data['data'][0]['name']
+            if to != 'EUR':
+                idCoin = data['data'][0]['id']
+                nameCoin = data['data'][0]['name']
+            else:
+                idCoin = 2790
+                nameCoin = 'Euro'
 
             for i in range(len(mychoices)):
-                if idCoin == mychoices[i][0]: 
+                if idCoin == mychoices[i][0]:
+                    froM = int(request.values.get('froM'))
+                    QFrom = float(request.values.get('QFrom'))
+                    for j in dictToCoin:
+                        if froM == j and froM != 2790:
+                            if QFrom > dictToCoin[j]:
+                                textError = "No tiene suficiente saldo de esa moneda."
+                                return render_template('purchase.html', form=form, route='purchase', textError=textError)
 
-                    froM = request.values.get('froM')
-                    QFrom = request.values.get('QFrom')
-                    QTo = request.values.get('QTo') 
-                    x = datetime.datetime.now()
-                    y = datetime.datetime.now()
-                    date = x.strftime('%d-%m-%Y')
-                    time = y.strftime('%X')
-
-                    consulta = '''
-                        INSERT INTO Movements (date, time, from_currency, from_quantity, to_currency, to_quantity) 
-                        VALUES (?,?,?,?,?,?);
-                    ''' 
-                    cursor.execute(consulta, (date, time, froM, QFrom, idCoin, QTo))
+                    insertMovements(conn, cur, idCoin, froM, QFrom)
                     conn.commit()
                     conn.close()
                     return redirect(url_for("index"))
-
-
             
             consultaCoin = '''
                 INSERT INTO Criptos (id, symbol, name) 
                 VALUES (?,?,?);
             '''
-            cursor.execute(consultaCoin, (idCoin, to, nameCoin))
-            
-            froM = request.values.get('froM')
-            QFrom = request.values.get('QFrom')
-            QTo = request.values.get('QTo') 
-            x = datetime.datetime.now()
-            y = datetime.datetime.now()
-            date = x.strftime('%d-%m-%Y')
-            time = y.strftime('%X')
+            cur.execute(consultaCoin, (idCoin, to, nameCoin))
 
-            consulta = '''
-                INSERT INTO Movements (date, time, from_currency, from_quantity, to_currency, to_quantity) 
-                VALUES (?,?,?,?,?,?);
-            ''' 
-            cursor.execute(consulta, (date, time, froM, QFrom, idCoin, QTo))
-            conn.commit()
+            froM = int(request.values.get('froM'))
+            QFrom = float(request.values.get('QFrom'))
+            for i in dictToCoin:
+                if froM == i and froM != 2790:
+                    if QFrom > dictToCoin[i]:
+                        textError = "No tiene suficiente saldo de esa moneda."
+                        return render_template('purchase.html', form=form, route='purchase', textError=textError)
+                
+            insertMovements(conn, cur, idCoin, froM, QFrom)
+            conn.commit()   
             conn.close()
 
             return redirect(url_for("index"))
-        
-        
-        except (ConnectionError, Timeout, TooManyRedirects) as e:
-            return(e)
 
-         
+        except (ConnectionError, Timeout, TooManyRedirects) as e:
+            textError = "Fallo en API. Inténtelo más tarde."
+            return render_template('purchase.html', form=form, route='purchase', textError=textError)     
     else:
-        return render_template('purchase.html', form=form, route=purchase)
+        return render_template('purchase.html', form=form, route='purchase')
 
 
 @app.route("/status", methods=('GET', 'POST'))
@@ -247,14 +254,17 @@ def status():
 @app.route("/coin")
 @cross_origin()
 def coin():
+    conn = sqlite3.connect(BASE_DATOS)
+    cur = conn.cursor()
+
+    mychoices = selectChoices(cur)
     form = SimuForm(request.form)
+    form.updateChoices(mychoices)
     
     froM = request.values.get('symbol')
     to = request.values.get('convert')
     QFrom = request.values.get('amount')
 
-    conn = sqlite3.connect(BASE_DATOS)
-    cur = conn.cursor()
     cursor = cur.execute("SELECT symbol FROM Criptos WHERE id=?", (froM,))
     fromSymbol = cursor.fetchone()
     url = 'https://pro-api.coinmarketcap.com/v1/tools/price-conversion'
@@ -273,9 +283,13 @@ def coin():
 
     try:
         response = session.get(url, params=parameters)
-        data = response.text
-        return data
-    except (ConnectionError, Timeout, TooManyRedirects) as e:
-        return e
-
+        data = json.loads(response.text)
+        if data['status']['error_code'] == 0:
+            return data
+        else:
+            raise Exception
+        
+    except (ConnectionError, Timeout, TooManyRedirects, Exception) as e:
+        textError = "Fallo en API. Inténtelo más tarde."
+        return textError, 400
     
