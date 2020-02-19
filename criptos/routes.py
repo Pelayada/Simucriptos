@@ -38,18 +38,41 @@ def selectChoices(cursor):
 
     return mychoices
 
-def insertMovements(conn, cursor, idCoin, froM, QFrom):
+def errorCoins(dictTotalCoin, idCoin, form):
+    froM = int(request.values.get('froM'))
+    QFrom = float(request.values.get('QFrom'))
+    for j in dictTotalCoin:
+        if froM != idCoin:
+            if froM == j and froM != 2790:
+                if QFrom > dictTotalCoin[j]:
+                    error = "No tiene suficiente saldo de esa moneda."
+                    return error
+        else:
+            error = "Las monedas no pueden ser iguales."
+            return error
+
+def insertMovements(conn, cursor, idCoin):
+    froM = int(request.values.get('froM'))
+    QFrom = float(request.values.get('QFrom'))
     QTo = request.values.get('QTo') 
     x = datetime.datetime.now()
     y = datetime.datetime.now()
     date = x.strftime('%d-%m-%Y')
     time = y.strftime('%X')
 
+    
     consulta = '''
         INSERT INTO Movements (date, time, from_currency, from_quantity, to_currency, to_quantity) 
         VALUES (?,?,?,?,?,?);
     ''' 
-    cursor.execute(consulta, (date, time, froM, QFrom, idCoin, QTo))
+
+    try:
+        cursor.execute(consulta, (date, time, froM, QFrom, idCoin, QTo))
+
+    except sqlite3.Error:
+        textError = "Fallo en Base de Datos. Inténtelo más tarde."
+        return render_template('purchase.html', form=form, route='purchase', textError=textError)
+        
 
 def sumaFromCoin(cur, coins):
     dictFromCoin = {}
@@ -110,6 +133,7 @@ def converCoin(dictTotalCoin, i, listConverCoin):
         response = session.get(url, params=parameters)
         data = json.loads(response.text)
         changeCoin = data['data']['quote']['EUR']['price']
+        
         listConverCoin.append(changeCoin)
         return listConverCoin
 
@@ -154,8 +178,13 @@ def updateCoins():
 
 @app.route("/")
 def index():
-    registros = todosMovDB()
-    return render_template("index.html", registros=registros, route="index")
+    try:
+        registros = todosMovDB()
+        return render_template("index.html", registros=registros, route="index")
+
+    except (sqlite3.Error, Exception):
+        textError = "Fallo en Base de Datos. Inténtelo más tarde."
+        return render_template('index.html', route='index', textError=textError)
 
 @app.route("/purchase", methods=('GET', 'POST'))
 def purchase():
@@ -172,8 +201,10 @@ def purchase():
     cur.execute(consulta)
     coins = cur.fetchall()
 
+    dictFromCoin = sumaFromCoin(cur, coins)
     dictToCoin = sumaToCoin(cur, coins)
-    
+    dictTotalCoin = sumaTotalCoin(dictFromCoin, dictToCoin)
+
     if request.method == 'GET':
         return render_template('purchase.html', form=form, mychoices=mychoices, route="purchase")
 
@@ -203,15 +234,11 @@ def purchase():
 
             for i in range(len(mychoices)):
                 if idCoin == mychoices[i][0]:
-                    froM = int(request.values.get('froM'))
-                    QFrom = float(request.values.get('QFrom'))
-                    for j in dictToCoin:
-                        if froM == j and froM != 2790:
-                            if QFrom > dictToCoin[j]:
-                                textError = "No tiene suficiente saldo de esa moneda."
-                                return render_template('purchase.html', form=form, route='purchase', textError=textError)
-
-                    insertMovements(conn, cur, idCoin, froM, QFrom)
+                    textError = errorCoins(dictTotalCoin, idCoin, form)
+                    if textError:
+                        return render_template('purchase.html', form=form, route='purchase', textError=textError)
+                    
+                    insertMovements(conn, cur, idCoin)
                     conn.commit()
                     conn.close()
                     return redirect(url_for("index"))
@@ -220,17 +247,17 @@ def purchase():
                 INSERT INTO Criptos (id, symbol, name) 
                 VALUES (?,?,?);
             '''
-            cur.execute(consultaCoin, (idCoin, to, nameCoin))
+            try:
+                cur.execute(consultaCoin, (idCoin, to, nameCoin))
+            except sqlite3.Error:
+                textError = "Fallo en Base de Datos. Inténtelo más tarde."
+                return render_template('purchase.html', form=form, route='purchase', textError=textError)
 
-            froM = int(request.values.get('froM'))
-            QFrom = float(request.values.get('QFrom'))
-            for i in dictToCoin:
-                if froM == i and froM != 2790:
-                    if QFrom > dictToCoin[i]:
-                        textError = "No tiene suficiente saldo de esa moneda."
-                        return render_template('purchase.html', form=form, route='purchase', textError=textError)
-                
-            insertMovements(conn, cur, idCoin, froM, QFrom)
+
+            textError = errorCoins(dictTotalCoin, idCoin, form)
+            if textError:
+                return render_template('purchase.html', form=form, route='purchase', textError=textError)            
+            insertMovements(conn, cur, idCoin)
             conn.commit()   
             conn.close()
 

@@ -32,13 +32,12 @@
                 <td>{{mov[5]}}</td>
                 <td>{{mov[6]}}</td>
                 <td> {{ "%.3f"|format((mov[4])/(mov[6])) }} </td>
-
             </tr>
             {% endfor %}
         </table>
     </div>
+    <h1 class='field-error'>{{ textError }}</h1>
     <a href="/status"><input type="button" value="Status"></a>
     <a href="/purchase"><input type="button" value="+"></a>
-
-    
+ 
 {% endblock %}
