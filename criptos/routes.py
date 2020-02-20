@@ -51,29 +51,42 @@ def errorCoins(dictTotalCoin, idCoin, form):
             error = "Las monedas no pueden ser iguales."
             return error
 
-def insertMovements(conn, cursor, idCoin):
+def consultCoin(cur, idCoin, to, nameCoin):
+    consultaCoin = '''
+        INSERT INTO Criptos (id, symbol, name) 
+        VALUES (?,?,?);
+    '''
+    try:
+        cur.execute(consultaCoin, (idCoin, to, nameCoin))
+    except (sqlite3.Error, Exception):
+        textError = "Fallo en Base de Datos. Inténtelo más tarde."
+        return render_template('purchase.html', form=form, route='purchase', textError=textError)
+
+
+def insertMovements(conn, cur, idCoin):
+    
     froM = int(request.values.get('froM'))
-    QFrom = float(request.values.get('QFrom'))
+    QFrom = request.values.get('QFrom')
+    QFrom = round(float(QFrom))
+
     QTo = request.values.get('QTo') 
     x = datetime.datetime.now()
     y = datetime.datetime.now()
     date = x.strftime('%d-%m-%Y')
     time = y.strftime('%X')
 
-    
     consulta = '''
         INSERT INTO Movements (date, time, from_currency, from_quantity, to_currency, to_quantity) 
         VALUES (?,?,?,?,?,?);
     ''' 
 
     try:
-        cursor.execute(consulta, (date, time, froM, QFrom, idCoin, QTo))
+        cur.execute(consulta, (date, time, froM, QFrom, idCoin, QTo))
 
-    except sqlite3.Error:
+    except (sqlite3.Error, Exception):
         textError = "Fallo en Base de Datos. Inténtelo más tarde."
         return render_template('purchase.html', form=form, route='purchase', textError=textError)
         
-
 def sumaFromCoin(cur, coins):
     dictFromCoin = {}
     for i in coins:
@@ -188,21 +201,28 @@ def index():
 
 @app.route("/purchase", methods=('GET', 'POST'))
 def purchase():
-    conn = sqlite3.connect(BASE_DATOS)
-    cur = conn.cursor()
-    
-    mychoices = selectChoices(cur)
-    form = SimuForm(request.form)
-    form.updateChoices(mychoices)
+    try:
+        conn = sqlite3.connect(BASE_DATOS)
+        cur = conn.cursor()
+        
+        mychoices = selectChoices(cur)
+        form = SimuForm(request.form)
+        form.updateChoices(mychoices)
 
-    consulta = """
-        SELECT id FROM Criptos;
-    """
-    cur.execute(consulta)
-    coins = cur.fetchall()
+        consulta = """
+            SELECT id FROM Criptos;
+        """
+        cur.execute(consulta)
 
-    dictFromCoin = sumaFromCoin(cur, coins)
-    dictToCoin = sumaToCoin(cur, coins)
+        coins = cur.fetchall()
+
+        dictFromCoin = sumaFromCoin(cur, coins)
+        dictToCoin = sumaToCoin(cur, coins)
+
+    except (sqlite3.Error, Exception):
+        textError = "Fallo en Base de Datos. Inténtelo más tarde."
+        return render_template('purchase.html', form=form, route='purchase', textError=textError) 
+
     dictTotalCoin = sumaTotalCoin(dictFromCoin, dictToCoin)
 
     if request.method == 'GET':
@@ -243,16 +263,7 @@ def purchase():
                     conn.close()
                     return redirect(url_for("index"))
             
-            consultaCoin = '''
-                INSERT INTO Criptos (id, symbol, name) 
-                VALUES (?,?,?);
-            '''
-            try:
-                cur.execute(consultaCoin, (idCoin, to, nameCoin))
-            except sqlite3.Error:
-                textError = "Fallo en Base de Datos. Inténtelo más tarde."
-                return render_template('purchase.html', form=form, route='purchase', textError=textError)
-
+            consultCoin(cur, idCoin, to, nameCoin)
 
             textError = errorCoins(dictTotalCoin, idCoin, form)
             if textError:
@@ -273,26 +284,36 @@ def purchase():
 @app.route("/status", methods=('GET', 'POST'))
 def status():
     form = SimuForm(request.form)
-    
-    sumaFinal = updateCoins()
+    try:
+        sumaFinal = updateCoins()
+
+    except (sqlite3.Error, Exception):
+        textError = "Fallo en Base de Datos. Inténtelo más tarde."
+        return render_template('status.html', form=form, route='purchase', textError=textError) 
    
     return render_template("status.html", form=form, route='status', sumaFinal=sumaFinal)
 
 @app.route("/coin")
 @cross_origin()
 def coin():
-    conn = sqlite3.connect(BASE_DATOS)
-    cur = conn.cursor()
+    try:
+        conn = sqlite3.connect(BASE_DATOS)
+        cur = conn.cursor()
 
-    mychoices = selectChoices(cur)
-    form = SimuForm(request.form)
-    form.updateChoices(mychoices)
+        mychoices = selectChoices(cur)
+        form = SimuForm(request.form)
+        form.updateChoices(mychoices)
+        
+        froM = request.values.get('symbol')
+        to = request.values.get('convert')
+        QFrom = request.values.get('amount')
+
+        cursor = cur.execute("SELECT symbol FROM Criptos WHERE id=?", (froM,))
     
-    froM = request.values.get('symbol')
-    to = request.values.get('convert')
-    QFrom = request.values.get('amount')
+    except (sqlite3.Error, Exception):
+        textError = "Fallo en Base de Datos. Inténtelo más tarde."
+        return render_template('purchase.html', form=form, route='purchase', textError=textError) 
 
-    cursor = cur.execute("SELECT symbol FROM Criptos WHERE id=?", (froM,))
     fromSymbol = cursor.fetchone()
     url = 'https://pro-api.coinmarketcap.com/v1/tools/price-conversion'
     parameters = {
