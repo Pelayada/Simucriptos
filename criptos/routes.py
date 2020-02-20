@@ -66,8 +66,7 @@ def consultCoin(cur, idCoin, to, nameCoin):
 def insertMovements(conn, cur, idCoin):
     
     froM = int(request.values.get('froM'))
-    QFrom = request.values.get('QFrom')
-    QFrom = round(float(QFrom))
+    QFrom = float(request.values.get('QFrom'))
 
     QTo = request.values.get('QTo') 
     x = datetime.datetime.now()
