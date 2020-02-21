@@ -50,7 +50,8 @@ def errorCoins(dictTotalCoin, idCoin, form):
         else:
             error = "Las monedas no pueden ser iguales."
             return error
-
+            
+# Introducir elementos en la tabla Criptos.
 def consultCoin(cur, idCoin, to, nameCoin):
     consultaCoin = '''
         INSERT INTO Criptos (id, symbol, name) 
@@ -62,9 +63,8 @@ def consultCoin(cur, idCoin, to, nameCoin):
         textError = "Fallo en Base de Datos. Inténtelo más tarde."
         return render_template('purchase.html', form=form, route='purchase', textError=textError)
 
-
+# Introducir elementos en la tabla Movements.
 def insertMovements(conn, cur, idCoin):
-    
     froM = int(request.values.get('froM'))
     QFrom = float(request.values.get('QFrom'))
 
