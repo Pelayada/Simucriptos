@@ -13,6 +13,7 @@ from requests.exceptions import ConnectionError, Timeout, TooManyRedirects
 BASE_DATOS = './data/mov.db'
 API_KEY = app.config['API_KEY']
 
+# Selección de elementos de tabla Movements para route index.
 def todosMovDB():
     conn = sqlite3.connect(BASE_DATOS)
     cur = conn.cursor()
@@ -27,6 +28,7 @@ def todosMovDB():
     conn.close()
     return filas
 
+# Selección de elementos de tabla Criptos para select dinámico.
 def selectChoices(cursor):
     consulta = """
         SELECT id, symbol, name FROM Criptos;
@@ -38,6 +40,7 @@ def selectChoices(cursor):
 
     return mychoices
 
+# Descartar posibles fallos entre monedas.
 def errorCoins(dictTotalCoin, idCoin, form):
     froM = int(request.values.get('froM'))
     QFrom = float(request.values.get('QFrom'))
@@ -59,7 +62,8 @@ def consultCoin(cur, idCoin, to, nameCoin):
     '''
     try:
         cur.execute(consultaCoin, (idCoin, to, nameCoin))
-    except (sqlite3.Error, Exception):
+    except (sqlite3.Error, Exception) as e:
+        print("Error en consultCoin - BBDD", e)
         textError = "Fallo en Base de Datos. Inténtelo más tarde."
         return render_template('purchase.html', form=form, route='purchase', textError=textError)
 
@@ -82,10 +86,12 @@ def insertMovements(conn, cur, idCoin):
     try:
         cur.execute(consulta, (date, time, froM, QFrom, idCoin, QTo))
 
-    except (sqlite3.Error, Exception):
+    except (sqlite3.Error, Exception) as e:
+        print("Error en insertMovements - BBDD", e)
         textError = "Fallo en Base de Datos. Inténtelo más tarde."
         return render_template('purchase.html', form=form, route='purchase', textError=textError)
-        
+
+# Sumatorio de la columna from_quantity.       
 def sumaFromCoin(cur, coins):
     dictFromCoin = {}
     for i in coins:
@@ -99,6 +105,7 @@ def sumaFromCoin(cur, coins):
         dictFromCoin[i[0]] = sumaFromCoin
     return dictFromCoin
 
+# Sumatorio de la columna to_quantity.       
 def sumaToCoin(cur, coins):
     dictToCoin = {}
     for i in coins:
@@ -112,6 +119,7 @@ def sumaToCoin(cur, coins):
         dictToCoin[i[0]] = sumaToCoin
     return dictToCoin
 
+# Diferencia entre to_quantity y from_quantity.
 def sumaTotalCoin(dictFromCoin, dictToCoin):
     dictTotalCoin = {}
     for i in dictFromCoin:
@@ -126,6 +134,7 @@ def sumaTotalCoin(dictFromCoin, dictToCoin):
 
     return dictTotalCoin
 
+# Conversión de monedas para la suma de valor actual.
 def converCoin(dictTotalCoin, i, listConverCoin):
     url = 'https://pro-api.coinmarketcap.com/v1/tools/price-conversion'
     parameters = {
@@ -150,9 +159,11 @@ def converCoin(dictTotalCoin, i, listConverCoin):
         return listConverCoin
 
     except (ConnectionError, Timeout, TooManyRedirects) as e:
+        print("Error en API ConverCoin - BBDD", e)
         textError = "Fallo en API. Inténtelo más tarde."
         return render_template('status.html', form=form, route='purchase', textError=textError)
 
+# Valor invertido y valor actual de la route status.
 def updateCoins():
     conn = sqlite3.connect(BASE_DATOS)
     cur = conn.cursor()
@@ -194,7 +205,8 @@ def index():
         registros = todosMovDB()
         return render_template("index.html", registros=registros, route="index")
 
-    except (sqlite3.Error, Exception):
+    except (sqlite3.Error, Exception) as e:
+        print("Error en index - BBDD", e)
         textError = "Fallo en Base de Datos. Inténtelo más tarde."
         return render_template('index.html', route='index', textError=textError)
 
@@ -218,7 +230,8 @@ def purchase():
         dictFromCoin = sumaFromCoin(cur, coins)
         dictToCoin = sumaToCoin(cur, coins)
 
-    except (sqlite3.Error, Exception):
+    except (sqlite3.Error, Exception) as e:
+        print("Error en purchase - BBDD", e)
         textError = "Fallo en Base de Datos. Inténtelo más tarde."
         return render_template('purchase.html', form=form, route='purchase', textError=textError) 
 
@@ -251,8 +264,14 @@ def purchase():
                 idCoin = 2790
                 nameCoin = 'Euro'
 
+            # Comprueba si la moneda ya ha sido guardada en la tabla Criptos,
+            # para no actualizar el select from.
+            
             for i in range(len(mychoices)):
                 if idCoin == mychoices[i][0]:
+
+                    # Comprueba si tiene saldo suficiente y si las monedas usadas
+                    # son distintas entre ellas.
                     textError = errorCoins(dictTotalCoin, idCoin, form)
                     if textError:
                         return render_template('purchase.html', form=form, route='purchase', textError=textError)
@@ -264,6 +283,8 @@ def purchase():
             
             consultCoin(cur, idCoin, to, nameCoin)
 
+            # Comprueba si tiene saldo suficiente y si las monedas usadas
+            # son distintas entre ellas.
             textError = errorCoins(dictTotalCoin, idCoin, form)
             if textError:
                 return render_template('purchase.html', form=form, route='purchase', textError=textError)            
@@ -274,11 +295,11 @@ def purchase():
             return redirect(url_for("index"))
 
         except (ConnectionError, Timeout, TooManyRedirects) as e:
+            print("Error en API - purchase", e)
             textError = "Fallo en API. Inténtelo más tarde."
             return render_template('purchase.html', form=form, route='purchase', textError=textError)     
     else:
         return render_template('purchase.html', form=form, route='purchase')
-
 
 @app.route("/status", methods=('GET', 'POST'))
 def status():
@@ -286,7 +307,8 @@ def status():
     try:
         sumaFinal = updateCoins()
 
-    except (sqlite3.Error, Exception):
+    except (sqlite3.Error, Exception) as e:
+        print("Error en status - BBDD", e)
         textError = "Fallo en Base de Datos. Inténtelo más tarde."
         return render_template('status.html', form=form, route='purchase', textError=textError) 
    
@@ -309,7 +331,8 @@ def coin():
 
         cursor = cur.execute("SELECT symbol FROM Criptos WHERE id=?", (froM,))
     
-    except (sqlite3.Error, Exception):
+    except (sqlite3.Error, Exception) as e:
+        print("Error en API Coin - BBDD", e)
         textError = "Fallo en Base de Datos. Inténtelo más tarde."
         return render_template('purchase.html', form=form, route='purchase', textError=textError) 
 
@@ -337,6 +360,7 @@ def coin():
             raise Exception
         
     except (ConnectionError, Timeout, TooManyRedirects, Exception) as e:
+        print("Error en API Coin", e)
         textError = "Fallo en API. Inténtelo más tarde."
         return textError, 400
     

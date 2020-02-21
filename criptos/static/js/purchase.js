@@ -6,7 +6,7 @@ const selTo = document.getElementById("selectTo");
 const selFrom = document.getElementById("selectFrom");
 
 
-
+// Devolución de respuesta API coinmarketcap.
 function reqHandler() {
     if (this.readyState === 4 && this.status === 200) { 
         const valueFrom = document.getElementById("QFrom").value;
@@ -24,6 +24,7 @@ function reqHandler() {
     }
 }
 
+// Al pulsar CALCULAR, manda consulta a la API y advierte de posibles errores.
 function btnClickFrom() {
     const selectFrom = document.getElementById("selectFrom").value;
     const valueFrom = document.getElementById("QFrom").value;
@@ -40,6 +41,7 @@ function btnClickFrom() {
     }   
 }
 
+// Al pulsar CANCELAR, resetea todos los campos.
 function btnClickCancel() {
     document.getElementById("QFrom").value = "";
     document.getElementById("QTo").value = "";
@@ -50,6 +52,7 @@ function btnClickCancel() {
     resetError();
 }
 
+// Resetea los errores que se hubieran originado.
 function resetError() {
     var errorQFrom = document.getElementsByClassName("field-error")
     if (errorQFrom.length >= 0) {
@@ -59,6 +62,7 @@ function resetError() {
     };
 }
 
+// Agrega un error por no introducir un número valido.
 function addErrorNumber () {
     var errorQFrom = document.getElementsByClassName("field-error")
     if (errorQFrom.length >= 0){
@@ -73,6 +77,7 @@ function addErrorNumber () {
     }  
 }
 
+// Agrega un error por no elegir moneda en los dos select.
 function addErrorSelect () {
     var errorQFrom = document.getElementsByClassName("field-error")
     if (errorQFrom.length >= 0){
