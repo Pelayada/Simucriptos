@@ -274,6 +274,10 @@ def purchase():
                     # son distintas entre ellas.
                     textError = errorCoins(dictTotalCoin, idCoin, form)
                     if textError:
+                        form.QFrom.data = ''
+                        form.QTo.data = ''
+                        form.froM.data = '-1'
+                        form.to.data = '-1'
                         return render_template('purchase.html', form=form, route='purchase', textError=textError)
                     
                     insertMovements(conn, cur, idCoin)
